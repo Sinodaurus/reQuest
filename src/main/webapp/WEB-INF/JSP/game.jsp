@@ -13,7 +13,7 @@
 						var ctxPlayer;
 						var animation = 0;
 						var animationSpeed = 5;
-						var steps = 0;
+						var steps = 0; 
 						var charDirection = 0;
 						var speed = 2;
 						var playerX = 50;
