@@ -8,7 +8,7 @@
 	$(document)
 			.ready(
 					function(e) {
-						var keys = {};
+						var keys = [];
 						var ctxLevel;
 						var ctxPlayer;
 						var animation = 0;
@@ -22,19 +22,53 @@
 						var oldPlayerY = 50;
 						var global = 0;
 						var ZeroToThree = true;
+						var keysInArray = 0;
+						var key;
 
-						$(document).keydown(function(event) {
-							keys[event.which] = true;
-							if(Object.keys(keys).length > 1 && Object.keys(keys)[0] !== "37") {
-								var previousKey = Object.keys(keys)[0];
-								delete keys[0];
-								keys[previousKey] = true;
-								}
-							
-						}).keyup(function(event) {
-							delete keys[event.which];
-						})
+// 						$(document).keydown(function(event) {
+// 							var keyPressed = false;
+// 							keys[keysInArray] = event.which;
+// // 							if()
+// 							if(keysInArray > 1 && keys[0] !== 37) {
+// 								var previousKey = keys[0];
+// 								keys[0] = keys[1];
+// 								keys[1] = previousKey;
+// 								keys.length = 2;
+// 								}
+// 							if(keyPressed === false) {
+// 								keysInArray++;
+// 							}
+// 						}).keyup(function(event) {
+// 							keys[keysInArray] = 0;
+// 							keysInArray--;
+// 							if(keysInArray === 0) {
+// 								keys = [];
+// 								}
+// 						})
 
+var Key = {
+  _pressed: {},
+
+  LEFT: 37,
+  UP: 38,
+  RIGHT: 39,
+  DOWN: 40,
+  
+  isDown: function(keyCode) {
+    return this._pressed[keyCode];
+  },
+  
+  onKeydown: function(event) {
+    this._pressed[event.keyCode] = true;
+  },
+  
+  onKeyup: function(event) {
+    delete this._pressed[event.keyCode];
+  }
+};
+var keypressed = false;
+// window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
+// window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
 						
 							var level = document.getElementById('level');
 							var player = document.getElementById('player');
@@ -48,12 +82,16 @@
 								playerImg.src = "${pageContext.request.contextPath}/img/hero.png";
 								play();
 							}
-						
+
+							window.addEventListener('keydown', function(event) {key = event.which; keypressed = true;});
+							window.addEventListener('keyup', function(event) {key = event.which; keypressed = false;});
 
 						function play() {
 							move();
 						}
 
+						//Walking animation ---------------------
+						
 						function doTheWalk() {
 							steps++;
 							if (ZeroToThree === true) {
@@ -75,54 +113,58 @@
 							}
 						}
 
+						//Move the player -----------------------
+						
 						function move() {
 							oldPlayerX = playerX;
 							oldPlayerY = playerY;
-
-							// Left arrow.
-							if (keys[37]) {
-								charDirection = 32;
-								doTheWalk();
-								playerX = playerX - speed;
-								if (playerX < 0) {
-									playerX = 0;
+							if(keypressed === true) {
+								switch(key) {
+								// Left arrow.
+								case 37:
+									charDirection = 32;
+									doTheWalk();
+									playerX = playerX - speed;
+									if (playerX < 0) {
+										playerX = 0;
+									}
+									break;
+	
+								// Right arrow.
+								case 39:
+									charDirection = 64;
+									doTheWalk();
+									playerX = playerX + speed;
+									if (playerX > 420) {
+										playerX = 420;
+									}
+									break;
+	
+								// Down arrow
+								case 40:
+									charDirection = 0;
+									doTheWalk();
+									playerY = playerY + speed;
+									if (playerY > 418) {
+										playerY = 418;
+									}
+									break;
+	
+								// Up arrow 
+								case 38:
+									charDirection = 96;
+									doTheWalk();
+									playerY = playerY - speed;
+									if (playerY < 0) {
+										playerY = 0;
+									}
+									break;
+								default:
+										animation = 0;
+										break;
 								}
-							} else
-
-							// Right arrow.
-							if (keys[39]) {
-								charDirection = 64;
-								doTheWalk();
-								playerX = playerX + speed;
-								if (playerX > 420) {
-									playerX = 420;
-								}
-							} else
-
-							// Down arrow
-							if (keys[40]) {
-								charDirection = 0;
-								doTheWalk();
-								playerY = playerY + speed;
-								if (playerY > 418) {
-									playerY = 418;
-								}
-							} else
-
-							// Up arrow 
-							if (keys[38]) {
-								charDirection = 96;
-								doTheWalk();
-								playerY = playerY - speed;
-								if (playerY < 0) {
-									playerY = 0;
-								}
-							} else {
-								animation = 1;
 							}
-
 							drawPlayer();
-
 							setTimeout(move, 20);
 						}
 
@@ -139,7 +181,7 @@
 							$.each(keys, function(key, value) {
 								keeys += key + ":" + value + " ... ";
 								});
-							$('#footer').html(keeys);
+							$('#footer').html(keeys + " ------------ " + keysInArray);
 							ctxPlayer.clearRect(oldPlayerX, oldPlayerY, 30, 32);
 							
 							ctxPlayer.drawImage(playerImg, animation * 30, charDirection,
